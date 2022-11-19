@@ -1,5 +1,5 @@
 using System;
-using ALevelSample.Entities;
+using ALevelSample.Data.Entities;
 using ALevelSample.Repositories.Abstractions;
 
 namespace ALevelSample.Repositories;
