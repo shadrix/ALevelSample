@@ -1,3 +1,8 @@
-﻿using System;
+﻿using ALevelSample;
+using ALevelSample.Repositories;
+using ALevelSample.Services;
 
-Console.WriteLine("Hello, World!");
+var logger = new SimpleLoggerService();
+
+var app = new App(new UserService(new UserRepository(), logger, new NotificationService(logger)));
+app.Start();
