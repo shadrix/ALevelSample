@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using ALevelSample.Data;
 using ALevelSample.Data.Entities;
@@ -8,33 +7,32 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ALevelSample.Repositories;
 
-public class UserRepository : IUserRepository
+public class ProductRepository : IProductRepository
 {
     private readonly ApplicationDbContext _dbContext;
 
-    public UserRepository(
+    public ProductRepository(
         IDbContextWrapper<ApplicationDbContext> dbContextWrapper)
     {
         _dbContext = dbContextWrapper.DbContext;
     }
 
-    public async Task<string> AddUserAsync(string firstName, string lastName)
+    public async Task<int> AddProductAsync(string name, double price)
     {
-        var user = new UserEntity()
+        var product = new ProductEntity()
         {
-            Id = Guid.NewGuid().ToString(),
-            FirstName = firstName,
-            LastName = lastName
+            Name = name,
+            Price = price
         };
 
-        await _dbContext.Users.AddAsync(user);
+        var result = await _dbContext.Products.AddAsync(product);
         await _dbContext.SaveChangesAsync();
 
-        return user.Id;
+        return result.Entity.Id;
     }
 
-    public async Task<UserEntity?> GetUserAsync(string id)
+    public async Task<ProductEntity?> GetProductAsync(int id)
     {
-        return await _dbContext.Users.FirstOrDefaultAsync(f => f.Id == id);
+        return await _dbContext.Products.FirstOrDefaultAsync(f => f.Id == id);
     }
 }
