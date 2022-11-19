@@ -1,9 +1,8 @@
 {
-  "Logger": {
-    "Path": "log.txt"
+  "Migration": {
+    "IsNeedMigration":  true
   },
-  "ConnectionStrings":
-  {
+  "ConnectionStrings": {
     "DefaultConnection": "Server=127.0.0.1,1434;Database=eShop;User ID=sa;Password=1My_password"
   }
 }

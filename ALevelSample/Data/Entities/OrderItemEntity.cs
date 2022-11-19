@@ -8,9 +8,9 @@ public class OrderItemEntity
 
     public int OrderId { get; set; }
 
-    public OrderEntity Order { get; set; }
+    public OrderEntity? Order { get; set; }
 
     public int ProductId { get; set; }
 
-    public ProductEntity Products { get; set; }
+    public ProductEntity? Product { get; set; }
 }
