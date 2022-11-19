@@ -1,43 +1,52 @@
+using System.Threading.Tasks;
+using ALevelSample.Data;
 using ALevelSample.Models;
 using ALevelSample.Repositories.Abstractions;
 using ALevelSample.Services.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace ALevelSample.Services;
 
-public class UserService : IUserService
+public class UserService : BaseDataService<ApplicationDbContext>, IUserService
 {
     private readonly IUserRepository _userRepository;
-    private readonly ILoggerService _loggerService;
     private readonly INotificationService _notificationService;
+    private readonly ILogger<UserService> _loggerService;
 
     public UserService(
+        IDbContextWrapper<ApplicationDbContext> dbContextWrapper,
+        ILogger<BaseDataService<ApplicationDbContext>> logger,
         IUserRepository userRepository,
-        ILoggerService loggerService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        ILogger<UserService> loggerService)
+        : base(dbContextWrapper, logger)
     {
         _userRepository = userRepository;
-        _loggerService = loggerService;
         _notificationService = notificationService;
+        _loggerService = loggerService;
     }
 
-    public string AddUser(string firstName, string lastName)
+    public async Task<string> AddUser(string firstName, string lastName)
     {
-       var id = _userRepository.AddUser(firstName, lastName);
-       _loggerService.Log(LogType.Info, $"Created user with Id = {id}");
-       var notifyMassage = "registration was successful";
-       var notifyTo = "user@gmail.com";
-       _notificationService.Notify(NotifyType.Email, notifyMassage, notifyTo);
-       return id;
+       return await ExecuteSafeAsync(async () =>
+        {
+            var id = await _userRepository.AddUserAsync(firstName, lastName);
+            _loggerService.LogInformation($"Created user with Id = {id}");
+            var notifyMassage = "registration was successful";
+            var notifyTo = "user@gmail.com";
+            _notificationService.Notify(NotifyType.Email, notifyMassage, notifyTo);
+            return id;
+        });
     }
 
-    public User GetUser(string id)
+    public async Task<User> GetUser(string id)
     {
-        var user = _userRepository.GetUser(id);
+        var user = await _userRepository.GetUserAsync(id);
 
         if (user == null)
         {
-            _loggerService.Log(LogType.Warning, $"Not founded user with Id = {id}");
-            return null;
+            _loggerService.LogWarning($"Not founded user with Id = {id}");
+            return null!;
         }
 
         return new User()
