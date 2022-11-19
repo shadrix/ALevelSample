@@ -1,13 +1,12 @@
-using System;
-using ALevelSample.Services;
+using ALevelSample.Services.Abstractions;
 
 namespace ALevelSample;
 
 public class App
 {
-    private readonly UserService _userService;
+    private readonly IUserService _userService;
 
-    public App(UserService userService)
+    public App(IUserService userService)
     {
         _userService = userService;
     }

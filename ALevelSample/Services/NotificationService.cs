@@ -1,20 +1,21 @@
 using System;
 using ALevelSample.Models;
+using ALevelSample.Services.Abstractions;
 
 namespace ALevelSample.Services;
 
-public class NotificationService
+public class NotificationService : INotificationService
 {
-    private readonly SimpleLoggerService _simpleLoggerService;
+    private readonly ILoggerService _loggerService;
 
-    public NotificationService(SimpleLoggerService simpleLoggerService)
+    public NotificationService(ILoggerService loggerService)
     {
-        _simpleLoggerService = simpleLoggerService;
+        _loggerService = loggerService;
     }
 
     public void Notify(NotifyType type, string massage, string to)
     {
         // For example, sent email to user
-        _simpleLoggerService.Log(LogType.Info, $"Notification was sent for type {type}");
+        _loggerService.Log(LogType.Info, $"Notification was sent for type {type}");
     }
 }

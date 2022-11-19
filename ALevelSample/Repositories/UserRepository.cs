@@ -1,9 +1,10 @@
 using System;
 using ALevelSample.Entities;
+using ALevelSample.Repositories.Abstractions;
 
 namespace ALevelSample.Repositories;
 
-public class UserRepository
+public class UserRepository : IUserRepository
 {
     private readonly UserEntity[] _mockStorage = new UserEntity[100];
     private int _mockStorageCursor = 0;

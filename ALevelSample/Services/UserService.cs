@@ -1,28 +1,29 @@
 using ALevelSample.Models;
-using ALevelSample.Repositories;
+using ALevelSample.Repositories.Abstractions;
+using ALevelSample.Services.Abstractions;
 
 namespace ALevelSample.Services;
 
-public class UserService
+public class UserService : IUserService
 {
-    private readonly UserRepository _userRepository;
-    private readonly SimpleLoggerService _simpleLoggerService;
-    private readonly NotificationService _notificationService;
+    private readonly IUserRepository _userRepository;
+    private readonly ILoggerService _loggerService;
+    private readonly INotificationService _notificationService;
 
     public UserService(
-        UserRepository userRepository,
-        SimpleLoggerService simpleLoggerService,
-        NotificationService notificationService)
+        IUserRepository userRepository,
+        ILoggerService loggerService,
+        INotificationService notificationService)
     {
         _userRepository = userRepository;
-        _simpleLoggerService = simpleLoggerService;
+        _loggerService = loggerService;
         _notificationService = notificationService;
     }
 
     public string AddUser(string firstName, string lastName)
     {
        var id = _userRepository.AddUser(firstName, lastName);
-       _simpleLoggerService.Log(LogType.Info, $"Created user with Id = {id}");
+       _loggerService.Log(LogType.Info, $"Created user with Id = {id}");
        var notifyMassage = "registration was successful";
        var notifyTo = "user@gmail.com";
        _notificationService.Notify(NotifyType.Email, notifyMassage, notifyTo);
@@ -35,7 +36,7 @@ public class UserService
 
         if (user == null)
         {
-            _simpleLoggerService.Log(LogType.Warning, $"Not founded user with Id = {id}");
+            _loggerService.Log(LogType.Warning, $"Not founded user with Id = {id}");
             return null;
         }
 
