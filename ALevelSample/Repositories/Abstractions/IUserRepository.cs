@@ -1,4 +1,4 @@
-using ALevelSample.Entities;
+using ALevelSample.Data.Entities;
 
 namespace ALevelSample.Repositories.Abstractions;
 
