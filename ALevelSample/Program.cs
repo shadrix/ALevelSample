@@ -16,7 +16,7 @@ void ConfigureServices(ServiceCollection serviceCollection, IConfiguration confi
 
     var connectionString = configuration.GetConnectionString("DefaultConnection");
     serviceCollection.AddDbContextFactory<ApplicationDbContext>(opts
-        => opts.UseSqlServer(connectionString));
+        => opts.UseNpgsql(connectionString));
     serviceCollection.AddScoped<IDbContextWrapper<ApplicationDbContext>, DbContextWrapper<ApplicationDbContext>>();
 
     serviceCollection

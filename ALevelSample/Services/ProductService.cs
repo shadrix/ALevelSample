@@ -47,4 +47,32 @@ public class ProductService : BaseDataService<ApplicationDbContext>, IProductSer
             Price = result.Price
         };
     }
+
+    public async Task<bool> UpdatePrice(int id, double price)
+    {
+        var result = await _productRepository.UpdatePrice(id, price);
+
+        if (!result)
+        {
+            _loggerService.LogWarning($"Not founded product with Id = {id} for update");
+            return false;
+        }
+
+        _loggerService.LogInformation($"Product with Id = {id} was updated");
+        return true;
+    }
+
+    public async Task<bool> Delete(int id)
+    {
+        var result = await _productRepository.Delete(id);
+
+        if (!result)
+        {
+            _loggerService.LogWarning($"Not founded product with Id = {id} for delete");
+            return false;
+        }
+
+        _loggerService.LogInformation($"Product with Id = {id} was deleted");
+        return true;
+    }
 }

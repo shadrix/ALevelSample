@@ -4,6 +4,6 @@
   },
   "ConnectionStrings":
   {
-    "DefaultConnection": "Server=127.0.0.1,1434;Database=eShop;User ID=sa;Password=1My_password"
+    "DefaultConnection": "server=127.0.0.1;port=5433;database=eShop;uid=postgres;password=postgres;"
   }
 }

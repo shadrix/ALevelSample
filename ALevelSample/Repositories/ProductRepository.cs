@@ -35,4 +35,33 @@ public class ProductRepository : IProductRepository
     {
         return await _dbContext.Products.FirstOrDefaultAsync(f => f.Id == id);
     }
+
+    public async Task<bool> UpdatePrice(int id, double price)
+    {
+        var entity = await _dbContext.Products.FirstOrDefaultAsync(f => f.Id == id);
+        if (entity == null)
+        {
+            return false;
+        }
+
+        entity!.Price = price;
+        _dbContext.Entry(entity).CurrentValues.SetValues(entity);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> Delete(int id)
+    {
+        var entity = await _dbContext.Products.FirstOrDefaultAsync(f => f.Id == id);
+        if (entity == null)
+        {
+            return false;
+        }
+
+        _dbContext.Entry(entity).State = EntityState.Deleted;
+        await _dbContext.SaveChangesAsync();
+
+        return true;
+    }
 }

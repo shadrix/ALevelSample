@@ -64,5 +64,8 @@ public class App
         });
 
         var userOrder = await _orderService.GetOrderByUserIdAsync(userId);
+
+        await _productService.UpdatePrice(product1, 355);
+        await _productService.Delete(product2);
     }
 }
