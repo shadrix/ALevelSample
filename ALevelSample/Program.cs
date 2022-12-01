@@ -1,6 +1,5 @@
 ﻿using ALevelSample;
-using ALevelSample.Repositories;
-using ALevelSample.Repositories.Abstractions;
+using ALevelSample.Config;
 using ALevelSample.Services;
 using ALevelSample.Services.Abstractions;
 using Microsoft.Extensions.Configuration;
@@ -9,11 +8,12 @@ using Microsoft.Extensions.Logging;
 
 void ConfigureServices(ServiceCollection serviceCollection, IConfiguration configuration)
 {
+    serviceCollection.AddOptions<ApiOption>().Bind(configuration.GetSection("Api"));
     serviceCollection
-        .AddTransient<IUserService, UserService>()
         .AddLogging(configure => configure.AddConsole())
-        .AddTransient<IUserRepository, UserRepository>()
-        .AddTransient<INotificationService, NotificationService>()
+        .AddHttpClient()
+        .AddTransient<IInternalHttpClientService, InternalHttpClientService>()
+        .AddTransient<IUserService, UserService>()
         .AddTransient<App>();
 }
 
@@ -26,4 +26,4 @@ ConfigureServices(serviceCollection, configuration);
 var provider = serviceCollection.BuildServiceProvider();
 
 var app = provider.GetService<App>();
-app!.Start();
+await app!.Start();

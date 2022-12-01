@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using ALevelSample.Services.Abstractions;
 
 namespace ALevelSample;
@@ -11,13 +12,9 @@ public class App
         _userService = userService;
     }
 
-    public void Start()
+    public async Task Start()
     {
-        var firstName = "first name";
-        var lastName = "last name";
-
-        var userId = _userService.AddUser(firstName, lastName);
-
-        _userService.GetUser(userId);
+        var user = await _userService.GetUserById(2);
+        var userInfo = await _userService.CreateUser("morpheus", "leader");
     }
 }

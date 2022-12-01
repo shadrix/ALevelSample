@@ -1,52 +1,60 @@
-using ALevelSample.Models;
-using ALevelSample.Repositories.Abstractions;
+using System.Net.Http;
+using System.Threading.Tasks;
+using ALevelSample.Config;
+using ALevelSample.Dtos;
+using ALevelSample.Dtos.Requests;
+using ALevelSample.Dtos.Responses;
 using ALevelSample.Services.Abstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ALevelSample.Services;
 
 public class UserService : IUserService
 {
-    private readonly IUserRepository _userRepository;
-    private readonly ILogger<UserService> _loggerService;
-    private readonly INotificationService _notificationService;
+    private readonly IInternalHttpClientService _httpClientService;
+    private readonly ILogger<UserService> _logger;
+    private readonly ApiOption _options;
+    private readonly string _userApi = "api/users/";
 
     public UserService(
-        IUserRepository userRepository,
-        ILogger<UserService> loggerService,
-        INotificationService notificationService)
+        IInternalHttpClientService httpClientService,
+        IOptions<ApiOption> options,
+        ILogger<UserService> logger)
     {
-        _userRepository = userRepository;
-        _loggerService = loggerService;
-        _notificationService = notificationService;
+        _httpClientService = httpClientService;
+        _logger = logger;
+        _options = options.Value;
     }
 
-    public string AddUser(string firstName, string lastName)
+    public async Task<UserDto> GetUserById(int id)
     {
-       var id = _userRepository.AddUser(firstName, lastName);
-       _loggerService.LogInformation($"Created user with Id = {id}");
-       var notifyMassage = "registration was successful";
-       var notifyTo = "user@gmail.com";
-       _notificationService.Notify(NotifyType.Email, notifyMassage, notifyTo);
-       return id;
+      var result = await _httpClientService.SendAsync<BaseResponse<UserDto>, object>($"{_options.Host}{_userApi}{id}", HttpMethod.Get);
+
+      if (result?.Data != null)
+      {
+          _logger.LogInformation($"User with id = {result.Data.Id} was found");
+      }
+
+      return result?.Data;
     }
 
-    public User GetUser(string id)
+    public async Task<UserResponse> CreateUser(string name, string job)
     {
-        var user = _userRepository.GetUser(id);
-
-        if (user == null)
+        var result = await _httpClientService.SendAsync<UserResponse, UserRequest>(
+            $"{_options.Host}{_userApi}",
+            HttpMethod.Post,
+            new UserRequest()
         {
-            _loggerService.LogWarning($"Not founded user with Id = {id}");
-            return null;
+            Job = job,
+            Name = name
+        });
+
+        if (result != null)
+        {
+            _logger.LogInformation($"User with id = {result?.Id} was created");
         }
 
-        return new User()
-        {
-            Id = user.Id,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            FullName = $"{user.FirstName} {user.LastName}"
-        };
+        return result;
     }
 }
