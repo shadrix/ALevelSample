@@ -3,7 +3,7 @@ services:
 
   pgadmin4:
     image: dpage/pgadmin4
-    container_name: pgadmin4
+    container_name: lde.pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: user@domain.com
       PGADMIN_DEFAULT_PASSWORD: postgres
@@ -14,8 +14,34 @@ services:
 
   postgres:
     image: postgres:13.3
-    container_name: postgres
+    container_name: lde.postgres
     environment:
       POSTGRES_PASSWORD: postgres
     ports:
       - 5433:5432
+  
+  mssql:
+    image: chriseaton/adventureworks:latest
+    container_name: lde.mssql
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: 1My_password
+    ports:
+      - 1434:1433
+  
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: lde.cloudbeaver
+    ports:
+      - 8002:8978
+
+networks:
+  default:
+    driver: bridge
+    internal: false
+    attachable: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.0.0/24
+          gateway: 192.168.0.1
