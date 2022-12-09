@@ -1,60 +1,181 @@
+﻿using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ALevelSample.Config;
 using ALevelSample.Dtos;
-using ALevelSample.Dtos.Requests;
 using ALevelSample.Dtos.Responses;
+using ALevelSample.Model;
 using ALevelSample.Services.Abstractions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace ALevelSample.Services;
 
-public class UserService : IUserService
+public class UserService : BaseService, IUserService
 {
-    private readonly IInternalHttpClientService _httpClientService;
-    private readonly ILogger<UserService> _logger;
-    private readonly ApiOption _options;
-    private readonly string _userApi = "api/users/";
+    private readonly IInternalHttpClientService _internalHttpClientService;
+    private readonly ApiOption _apiOption;
 
     public UserService(
-        IInternalHttpClientService httpClientService,
-        IOptions<ApiOption> options,
-        ILogger<UserService> logger)
+        IInternalHttpClientService internalHttpClientService,
+        IOptions<ApiOption> options)
     {
-        _httpClientService = httpClientService;
-        _logger = logger;
-        _options = options.Value;
+        _apiOption = options.Value;
+        _internalHttpClientService = internalHttpClientService;
     }
 
-    public async Task<UserDto> GetUserById(int id)
+    public async Task<User> GetUser(int id)
     {
-      var result = await _httpClientService.SendAsync<BaseResponse<UserDto>, object>($"{_options.Host}{_userApi}{id}", HttpMethod.Get);
-
-      if (result?.Data != null)
-      {
-          _logger.LogInformation($"User with id = {result.Data.Id} was found");
-      }
-
-      return result?.Data;
-    }
-
-    public async Task<UserResponse> CreateUser(string name, string job)
-    {
-        var result = await _httpClientService.SendAsync<UserResponse, UserRequest>(
-            $"{_options.Host}{_userApi}",
-            HttpMethod.Post,
-            new UserRequest()
+        return await ExecuteSafeAsync(async () =>
         {
-            Job = job,
-            Name = name
+            var response =
+                await _internalHttpClientService.SendAsync<PagingResponse<UserDto>>($"{_apiOption.Host}/users/{id}", HttpMethod.Get);
+
+            if (response!.Data != null)
+            {
+                return new User
+                {
+                    Email = response.Data.Email,
+                    FirstName = response.Data.FirstName,
+                    Id = response.Data.Id,
+                    LastName = response.Data.LastName,
+                    UrlAvatar = response.Data.UrlAvatar
+                };
+            }
+
+            return null!;
         });
+    }
 
-        if (result != null)
+    public async Task<CollectionData<User>> GetUsersByPage(int page)
+    {
+        return await ExecuteSafeAsync(async () =>
         {
-            _logger.LogInformation($"User with id = {result?.Id} was created");
-        }
+            var response =
+                await _internalHttpClientService.SendAsync<PagingResponse<UserDto[]>>($"{_apiOption.Host}/users?page={page}", HttpMethod.Get);
 
-        return result;
+            if (response!.Data != null)
+            {
+                return new CollectionData<User>()
+                {
+                    Data = response.Data.Select(s => new User
+                    {
+                        Email = s.Email,
+                        FirstName = s.FirstName,
+                        Id = s.Id,
+                        LastName = s.LastName,
+                        UrlAvatar = s.UrlAvatar
+                    }).ToList()
+                };
+            }
+
+            return null!;
+        });
+    }
+
+    public async Task<CollectionData<User>> GetUsersByDelay(int delay)
+    {
+        return await ExecuteSafeAsync(async () =>
+        {
+            var response =
+                await _internalHttpClientService.SendAsync<PagingResponse<UserDto[]>>($"{_apiOption.Host}/users?delay={delay}", HttpMethod.Get);
+
+            if (response!.Data != null)
+            {
+                return new CollectionData<User>()
+                {
+                    Data = response.Data.Select(s => new User
+                    {
+                        Email = s.Email,
+                        FirstName = s.FirstName,
+                        Id = s.Id,
+                        LastName = s.LastName,
+                        UrlAvatar = s.UrlAvatar
+                    }).ToList()
+                };
+            }
+
+            return null!;
+        });
+    }
+
+    public async Task<Employee> CreateUserEmployee(string name, string job)
+    {
+        return await ExecuteSafeAsync(async () =>
+        {
+            var request = new EmployeeDto { Name = name, Job = job };
+            var response =
+                await _internalHttpClientService.SendAsync<EmployeeDto>($"{_apiOption.Host}/users", HttpMethod.Post, request);
+
+            if (response != null)
+            {
+                return new Employee
+                {
+                    CreatedAt = response.CreatedAt,
+                    Job = response.Job,
+                    Id = response.Id,
+                    Name = response.Name,
+                    UpdatedAt = response.UpdatedAt
+                };
+            }
+
+            return null!;
+        });
+    }
+
+    public async Task<Employee> UpdateUserEmployee(int id, string name, string job)
+    {
+        return await ExecuteSafeAsync(async () =>
+        {
+            var request = new EmployeeDto { Name = name, Job = job };
+            var response =
+                await _internalHttpClientService.SendAsync<EmployeeDto>($"{_apiOption.Host}/users/{id}", HttpMethod.Put, request);
+
+            if (response != null)
+            {
+                return new Employee
+                {
+                    CreatedAt = response.CreatedAt,
+                    Job = response.Job,
+                    Id = response.Id,
+                    Name = response.Name,
+                    UpdatedAt = response.UpdatedAt
+                };
+            }
+
+            return null!;
+        });
+    }
+
+    public async Task<Employee> ModifyUserEmployee(int id, string name, string job)
+    {
+        return await ExecuteSafeAsync(async () =>
+        {
+            var request = new EmployeeDto { Name = name, Job = job };
+            var response =
+                await _internalHttpClientService.SendAsync<EmployeeDto>($"{_apiOption.Host}/users/{id}", HttpMethod.Patch, request);
+
+            if (response != null)
+            {
+                return new Employee
+                {
+                    CreatedAt = response.CreatedAt,
+                    Job = response.Job,
+                    Id = response.Id,
+                    Name = response.Name,
+                    UpdatedAt = response.UpdatedAt
+                };
+            }
+
+            return null!;
+        });
+    }
+
+    public async Task<VoidResult> RemoveUserEmployee(int id)
+    {
+        return await ExecuteSafeAsync<VoidResult>(async () =>
+        {
+            await _internalHttpClientService.SendAsync($"{_apiOption.Host}/users/{id}", HttpMethod.Delete);
+            return null!;
+        });
     }
 }

@@ -1,5 +1,5 @@
 {
   "Api": {
-    "Host": "https://reqres.in/"
+    "Host": "https://reqres.in/api"
   }
 }

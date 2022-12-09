@@ -6,6 +6,7 @@
         <LangVersion>10.0</LangVersion>
         <CodeAnalysisRuleSet>../settings.ruleset</CodeAnalysisRuleSet>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>

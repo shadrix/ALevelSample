@@ -12,8 +12,10 @@ void ConfigureServices(ServiceCollection serviceCollection, IConfiguration confi
     serviceCollection
         .AddLogging(configure => configure.AddConsole())
         .AddHttpClient()
-        .AddTransient<IInternalHttpClientService, InternalHttpClientService>()
+        .AddTransient<IInternalHttpClientService, InternalHttpClientClientService>()
         .AddTransient<IUserService, UserService>()
+        .AddTransient<IAuthenticationService, AuthenticationService>()
+        .AddTransient<IResourceService, ResourceService>()
         .AddTransient<App>();
 }
 
