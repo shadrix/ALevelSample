@@ -1,95 +1,46 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using static System.Console;
 
-var lock1 = new object();
-var lock2 = new object();
+SemaphoreSlim semaphore = new (3);
+int amount = 0;
 
-void AcquireLocks1()
+async Task AccessAsync(int id)
 {
-    var threadId = Thread.CurrentThread.ManagedThreadId;
+    WriteLine($"Task {id} is waiting to access the amount.");
+    await semaphore.WaitAsync();
 
-    while (true)
+    try
     {
-        if (Monitor.TryEnter(lock1, TimeSpan.FromSeconds(1)))
-        {
-            try
-            {
-                WriteLine($"Thread {threadId} acquired lock 1.");
-                Thread.Sleep(1000);
-                WriteLine($"Thread {threadId} attempted to acquire lock 2.");
+        WriteLine($"Task {id} is now accessing the amount.");
 
-                if (Monitor.TryEnter(lock2, TimeSpan.FromSeconds(1)))
-                {
-                    try
-                    {
-                        WriteLine($"Thread {threadId} acquired lock 2.");
-                        break; // exit the loop if both locks are acquired
-                    }
-                    finally
-                    {
-                        Monitor.Exit(lock2);
-                    }
-                }
-            }
-            finally
-            {
-                Monitor.Exit(lock1);
-            }
-        }
+        // simulate some work
+        await Task.Delay(TimeSpan.FromSeconds(1));
+
+        // increase the counter
+        Interlocked.Increment(ref amount);
+
+        // completed the work
+        WriteLine($"Task {id} has completed accessing the amount {amount}");
     }
-
-    WriteLine($"Thread {threadId} is done.");
+    finally
+    {
+        semaphore.Release();
+    }
 }
 
-void AcquireLocks2()
+// start 10 tasks to access the amount concurrently
+var tasks = new List<Task>();
+
+for (int i = 1; i <= 10; i++)
 {
-    var threadId = Thread.CurrentThread.ManagedThreadId;
-
-    while (true)
-    {
-        if (Monitor.TryEnter(lock2, TimeSpan.FromSeconds(1)))
-        {
-            try
-            {
-                WriteLine($"Thread {threadId} acquired lock 2.");
-                Thread.Sleep(1000);
-                WriteLine($"Thread {threadId} attempted to acquire lock 1.");
-
-                if (Monitor.TryEnter(lock1, TimeSpan.FromSeconds(1)))
-                {
-                    try
-                    {
-                        WriteLine($"Thread {threadId} acquired lock 1.");
-                        break; // exit the loop if both locks are acquired
-                    }
-                    finally
-                    {
-                        Monitor.Exit(lock1);
-                    }
-                }
-            }
-            finally
-            {
-                Monitor.Exit(lock2);
-            }
-        }
-    }
-
-    WriteLine($"Thread {threadId} is done.");
+    tasks.Add(AccessAsync(i));
 }
 
-// Create two new threads that compete for the locks
-var thread1 = new Thread(AcquireLocks1);
-var thread2 = new Thread(AcquireLocks2);
+// wait for all task to complete
+await Task.WhenAll(tasks);
 
-// Start the threads
-thread1.Start();
-thread2.Start();
-
-// Wait for the threads to complete
-thread1.Join();
-thread2.Join();
-
-WriteLine("Finished.");
+WriteLine("All tasks completed.");
 ReadLine();
