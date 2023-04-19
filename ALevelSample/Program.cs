@@ -1,28 +1,17 @@
-﻿// Queue a work item to be executed on a separate thread from the thread pool.
+﻿using System.Collections.Generic;
+using System.Linq;
+using static System.Console;
 
-using System;
-using System.Threading;
+var numbers = new List<int> { 1, 5, 2, 8, 9 };
 
-ThreadPool.QueueUserWorkItem(new WaitCallback(DoWork), "WorkItem");
+var oddNumbers = numbers
+    .Where(number => number % 2 != 0)
+    .Select(number => number)
+    .ToList();
 
-// Simulate other work in the main thread.
-for (int i = 0; i < 5; i++)
+numbers.Add(11);
+
+foreach (var number in oddNumbers)
 {
-    Console.WriteLine("Main thread: {0}", i);
-    Thread.Sleep(1000);
-}
-
-// Wait for the user to hit <Enter> to exit the program.
-Console.ReadLine();
-
-// The method to be executed by the queued work item.
-static void DoWork(object state)
-{
-    string workItemName = state as string;
-
-    for (int i = 0; i < 5; i++)
-    {
-        Console.WriteLine("{0} is running on a separate thread: {1}", workItemName, i);
-        Thread.Sleep(500);
-    }
+    WriteLine(number);
 }
